@@ -57,7 +57,9 @@ export async function createReport(formData: FormData): Promise<ReportResult> {
   const ownerHash = await getOrCreateOwnerHash()
   let imagePath: string | null = null
   try {
-    if (image) imagePath = await uploadImage(image.file, image.bytes)
+    if (image && typeof image !== 'string') {
+      imagePath = await uploadImage(image.file, image.bytes)
+    }
     const id = await insertReport(values, ownerHash, imagePath)
     revalidateAll(id)
     return { ok: true, id }
@@ -83,7 +85,9 @@ export async function updateReport(id: string, formData: FormData): Promise<Repo
   let newPath: string | null = null
   try {
     const removeExisting = formData.get('removeImage') === 'true'
-    if (image) newPath = await uploadImage(image.file, image.bytes)
+    if (image && typeof image !== 'string') {
+      newPath = await uploadImage(image.file, image.bytes)
+    }  
     const imageChange = image ? { path: newPath } : removeExisting ? { path: null } : null
     const result = await updateOwnedReport(id, ownerHash, values, imageChange)
     if (!result) {
